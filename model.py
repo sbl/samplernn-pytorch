@@ -1,11 +1,10 @@
-import nn
-import utils
-
+import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.nn import init
 
-import numpy as np
+import nn
+import utils
 
 
 class SampleRNN(torch.nn.Module):
@@ -243,9 +242,6 @@ class Generator(Runner):
         self.cuda = cuda
 
     def __call__(self, n_seqs, seq_len):
-        # generation doesn't work with CUDNN for some reason
-        torch.backends.cudnn.enabled = False
-
         self.reset_hidden_states()
 
         bottom_frame_size = self.model.frame_level_rnns[0].n_frame_samples
@@ -295,7 +291,5 @@ class Generator(Runner):
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
-
-        torch.backends.cudnn.enabled = True
 
         return sequences[:, self.model.lookback :]
