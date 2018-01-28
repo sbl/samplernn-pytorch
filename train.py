@@ -1,8 +1,3 @@
-# CometML needs to be imported first.
-try:
-    import comet_ml
-except ImportError:
-    pass
 
 from model import SampleRNN, Predictor
 from optim import gradient_clipping
@@ -144,22 +139,6 @@ def make_data_loader(overlap_len, params):
         )
     return data_loader
 
-def init_comet(params, trainer):
-    if params['comet_key'] is not None:
-        from comet_ml import Experiment
-        from trainer.plugins import CometPlugin
-        experiment = Experiment(api_key=params['comet_key'], log_code=False)
-        hyperparams = {
-            name: param_to_string(params[name]) for name in tag_params
-        }
-        experiment.log_multiple_params(hyperparams)
-        trainer.register_plugin(CometPlugin(
-            experiment, [
-                ('training_loss', 'epoch_mean'),
-                'validation_loss',
-                'test_loss'
-            ]
-        ))
 
 def main(exp, frame_sizes, dataset, **params):
     params = dict(
@@ -252,8 +231,6 @@ def main(exp, frame_sizes, dataset, **params):
             }
         }
     ))
-
-    init_comet(params, trainer)
 
     trainer.run(params['epoch_limit'])
 
